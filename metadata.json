@@ -1,0 +1,8 @@
+{
+  "name": "제이지뮤직스튜디오 | JG MUSIC STUDIO",
+  "description": "작곡·편곡, 음원 제작\n현업 프로듀서의 1:1 맞춤형 큐베이스 미디 레슨",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
