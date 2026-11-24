@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Sliders, Music2, Cpu, Mic } from 'lucide-react';
 import { ProducerCredit, SiteContent } from '../types';
+import { OptimizedImage } from './OptimizedImage';
 
 interface AboutProps {
   content: SiteContent;
@@ -29,10 +30,11 @@ export const About: React.FC<AboutProps> = ({ content, credits }) => {
           {/* Left Column: Producer Image & Fast Spec */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="relative rounded-xl overflow-hidden border border-white/10 aspect-[4/3] bg-neutral-900 group">
-              <img
+              <OptimizedImage
                 src="/src/assets/images/producer_workstation_1794239966408.jpg"
                 alt="제이지뮤직스튜디오 프로듀서 작업 공간"
                 referrerPolicy="no-referrer"
+                sizes="(max-width: 1023px) 92vw, 500px"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />

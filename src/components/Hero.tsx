@@ -2,6 +2,7 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import { HomepageConfig, SiteContent } from '../types';
 import { INITIAL_HOMEPAGE_CONFIG } from '../data/initialData';
+import { OptimizedImage } from './OptimizedImage';
 
 interface HeroProps {
   content: SiteContent;
@@ -21,10 +22,12 @@ export const Hero: React.FC<HeroProps> = ({
     <section className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24 lg:pt-28 lg:pb-36">
       {/* Background Studio Visual with Measured Contrast Scrim */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <img
+        <OptimizedImage
           src="/src/assets/images/hero_music_studio_1794239965350.jpg"
           alt="제이지뮤직스튜디오 전문 컨트롤룸"
           referrerPolicy="no-referrer"
+          sizes="100vw"
+          priority
           className="h-full w-full object-cover object-center scale-105 opacity-35 filter brightness-90 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-[#0a0a0a]/40" />
@@ -69,9 +72,11 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Right Column: Uploaded Logo Image with Subtle Forward Hover Lift */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
             <div className="relative flex items-center justify-center w-full max-w-[240px] sm:max-w-[360px] lg:max-w-[500px]">
-              <img
+              <OptimizedImage
                 src={hero.logoUrl || '/assets/aistudio/KakaoTalk_20261029_152546267_01_40abeb0d.png'}
                 alt="제이지뮤직스튜디오 공식 로고"
+                sizes="(max-width: 639px) 240px, (max-width: 1023px) 360px, 500px"
+                priority
                 className="w-[240px] h-[240px] sm:w-[360px] sm:h-[360px] lg:w-[500px] lg:h-[500px] max-w-full object-contain drop-shadow-[0_0_50px_rgba(255,255,255,0.16)] transition-all duration-300 ease-out lg:hover:scale-[1.035] lg:hover:-translate-y-1.5 hover:drop-shadow-[0_14px_55px_rgba(255,255,255,0.26)]"
               />
             </div>

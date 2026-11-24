@@ -30,6 +30,7 @@ import {
   Briefcase,
   Layers,
 } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 import {
   ConsultationInquiry,
   CurriculumCourse,
@@ -1068,9 +1069,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-neutral-900/90 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white overflow-hidden p-0.5 shrink-0 shadow-sm">
-              <img
+              <OptimizedImage
                 src="/assets/aistudio/JG_MUSIC_STUDIO_2dd5aa15.png"
                 alt="JG MUSIC STUDIO 로고"
+                sizes="32px"
+                maxWidth={320}
+                priority
                 className="h-full w-full object-contain"
               />
             </div>
@@ -1452,9 +1456,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                                 : 'aspect-square'
                             }`}
                           >
-                            <img
+                            <OptimizedImage
                               src={releaseForm.coverUrl}
                               alt="커버 미리보기"
+                              sizes="200px"
+                              maxWidth={640}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -1692,9 +1698,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           >
                             <div className="flex items-center gap-3.5 min-w-0">
                               <div className="h-14 w-14 rounded-lg overflow-hidden border border-white/10 bg-black shrink-0">
-                                <img
+                                <OptimizedImage
                                   src={item.coverUrl}
                                   alt={item.title}
+                                  sizes="56px"
+                                  maxWidth={320}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
@@ -2836,9 +2844,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         </label>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           <div className="h-24 w-24 rounded-xl border border-white/15 bg-black p-2 shrink-0 flex items-center justify-center">
-                            <img
+                            <OptimizedImage
                               src={homepageConfig.hero.logoUrl}
                               alt="로고 미리보기"
+                              sizes="96px"
+                              maxWidth={320}
                               className="h-full w-full object-contain"
                             />
                           </div>
@@ -5029,10 +5039,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </h4>
                     <div className="max-w-md rounded-xl border border-white/15 bg-neutral-900 overflow-hidden shadow-lg">
                       <div className="aspect-[1.91/1] w-full bg-neutral-800 overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={seo.ogImageUrl}
                           alt="OG Preview"
                           referrerPolicy="no-referrer"
+                          sizes="448px"
+                          maxWidth={640}
                           className="w-full h-full object-cover"
                         />
                       </div>

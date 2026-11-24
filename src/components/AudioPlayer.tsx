@@ -3,6 +3,7 @@ import { Play, Music, Film, Disc, Maximize2, X } from 'lucide-react';
 import { AudioTrack, HomepageConfig, ReleaseCategory, ReleaseItem } from '../types';
 import { INITIAL_RELEASES } from '../data/releasesData';
 import { INITIAL_HOMEPAGE_CONFIG } from '../data/initialData';
+import { OptimizedImage } from './OptimizedImage';
 
 export type { ReleaseItem };
 
@@ -169,9 +170,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                       </span>
                     </div>
 
-                    <img
+                    <OptimizedImage
                       src={release.coverUrl}
                       alt={`${release.title}${release.artist ? ` - ${release.artist}` : ''}`}
+                      sizes="(max-width: 639px) 46vw, (max-width: 1023px) 31vw, 280px"
+                      maxWidth={640}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -241,9 +244,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
               </button>
 
               <div className="w-full max-h-[65vh] rounded-xl overflow-hidden border border-white/10 bg-black flex items-center justify-center">
-                <img
+                <OptimizedImage
                   src={previewItem.coverUrl}
                   alt={previewItem.title}
+                  sizes="(max-width: 639px) 92vw, 512px"
+                  includeDimensions={false}
+                  priority
                   className="max-h-[65vh] w-auto object-contain"
                 />
               </div>

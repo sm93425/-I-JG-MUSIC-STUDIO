@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import {
   INITIAL_CURRICULUM,
   INITIAL_POSTS,
@@ -36,7 +36,10 @@ import { BlogReviews } from './components/BlogReviews';
 import { ContactSection } from './components/ContactSection';
 import { CustomSectionRenderer } from './components/CustomSectionRenderer';
 import { Footer } from './components/Footer';
-import { AdminModal } from './components/AdminModal';
+
+const AdminModal = lazy(() =>
+  import('./components/AdminModal').then((mod) => ({ default: mod.AdminModal }))
+);
 
 const mergeHomepageConfig = (saved: Partial<HomepageConfig> | null): HomepageConfig => {
   if (!saved) return INITIAL_HOMEPAGE_CONFIG;
@@ -266,6 +269,13 @@ export default function App() {
 
   // UI state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [hasLoadedAdmin, setHasLoadedAdmin] = useState(() => {
+    try {
+      return sessionStorage.getItem('jz_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [selectedCourseForConsult, setSelectedCourseForConsult] = useState<string>('');
   const [selectedReleaseCategory, setSelectedReleaseCategory] = useState<ReleaseCategory>('ALL');
   const [activeInquiryType, setActiveInquiryType] = useState<'lesson' | 'production'>('lesson');
@@ -509,7 +519,10 @@ export default function App() {
         content={siteContent}
         releases={releases}
         homepageConfig={homepageConfig}
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAdmin={() => {
+          setHasLoadedAdmin(true);
+          setIsAdminOpen(true);
+        }}
         onOpenConsultation={() => scrollToContact('lesson')}
         selectedCategory={selectedReleaseCategory}
         onSelectCategory={setSelectedReleaseCategory}
@@ -526,28 +539,32 @@ export default function App() {
         />
       )}
 
-      {/* Full Integrated Admin Dashboard Modal */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        releases={releases}
-        setReleases={setReleases}
-        homepageConfig={homepageConfig}
-        setHomepageConfig={setHomepageConfig}
-        theme={theme}
-        setTheme={setTheme}
-        content={siteContent}
-        setContent={setSiteContent}
-        credits={credits}
-        setCredits={setCredits}
-        courses={courses}
-        setCourses={setCourses}
-        seo={seo}
-        setSeo={setSeo}
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onResetAllData={handleResetAllData}
-      />
+      {/* Full Integrated Admin Dashboard Modal (Code-split & loaded on demand) */}
+      {(hasLoadedAdmin || isAdminOpen) && (
+        <Suspense fallback={null}>
+          <AdminModal
+            isOpen={isAdminOpen}
+            onClose={() => setIsAdminOpen(false)}
+            releases={releases}
+            setReleases={setReleases}
+            homepageConfig={homepageConfig}
+            setHomepageConfig={setHomepageConfig}
+            theme={theme}
+            setTheme={setTheme}
+            content={siteContent}
+            setContent={setSiteContent}
+            credits={credits}
+            setCredits={setCredits}
+            courses={courses}
+            setCourses={setCourses}
+            seo={seo}
+            setSeo={setSeo}
+            inquiries={inquiries}
+            setInquiries={setInquiries}
+            onResetAllData={handleResetAllData}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

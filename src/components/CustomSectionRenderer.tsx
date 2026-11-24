@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, Sparkles, ExternalLink } from 'lucide-react';
 import { CustomHomepageCategory } from '../types';
+import { OptimizedImage } from './OptimizedImage';
 
 interface CustomSectionRendererProps {
   section: CustomHomepageCategory;
@@ -96,9 +97,10 @@ export const CustomSectionRenderer: React.FC<CustomSectionRendererProps> = ({
                 <div className="h-full rounded-2xl border border-white/10 bg-neutral-900/60 overflow-hidden hover:border-white/25 transition-all flex flex-col">
                   {item.imageUrl && (
                     <div className="aspect-video w-full bg-black overflow-hidden border-b border-white/10">
-                      <img
+                      <OptimizedImage
                         src={item.imageUrl}
                         alt={item.title}
+                        sizes="(max-width: 767px) 92vw, (max-width: 1023px) 46vw, 400px"
                         className="w-full h-full object-cover"
                       />
                     </div>

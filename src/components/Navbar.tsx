@@ -3,6 +3,7 @@ import { Menu, X, ArrowUpRight, ChevronDown, Music, Film, Disc } from 'lucide-re
 import { SiteContent, ReleaseCategory, ReleaseItem, HomepageConfig } from '../types';
 import { INITIAL_RELEASES } from '../data/releasesData';
 import { INITIAL_HOMEPAGE_CONFIG } from '../data/initialData';
+import { OptimizedImage } from './OptimizedImage';
 
 interface NavbarProps {
   content: SiteContent;
@@ -109,9 +110,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-black border border-white/20 overflow-hidden shrink-0 shadow-sm transition-transform group-hover:scale-105 cursor-pointer"
           >
-            <img
+            <OptimizedImage
               src={hero.logoUrl || '/assets/aistudio/KakaoTalk_20261029_152546267_01_40abeb0d.png'}
               alt="JG MUSIC STUDIO 로고"
+              sizes="(max-width: 639px) 32px, 40px"
+              maxWidth={320}
+              priority
               className="h-full w-full object-contain"
             />
           </div>
