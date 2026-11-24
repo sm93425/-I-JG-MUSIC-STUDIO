@@ -8,6 +8,16 @@
     overflow-x: clip;
     max-width: 100%;
   }
+
+  html {
+    font-size: calc(16px * var(--font-scale-mobile, 1));
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: calc(16px * var(--font-scale-desktop, 1));
+    }
+  }
 }
 
 /* Custom subtle scrollbar */

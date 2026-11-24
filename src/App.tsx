@@ -273,6 +273,10 @@ export default function App() {
   // --- Auto-persist effects ---
   useEffect(() => {
     localStorage.setItem('jz_theme', JSON.stringify(theme));
+    const desktopScale = (theme.fontSizeScale ?? 100) / 100;
+    const mobileScale = (theme.mobileFontSizeScale ?? 100) / 100;
+    document.documentElement.style.setProperty('--font-scale-desktop', String(desktopScale));
+    document.documentElement.style.setProperty('--font-scale-mobile', String(mobileScale));
   }, [theme]);
 
   useEffect(() => {
@@ -389,9 +393,11 @@ export default function App() {
   // Dynamically select font class
   const fontClass =
     theme.fontFamily === 'serif'
-      ? 'font-serif'
+      ? "font-['Noto_Serif_KR',Georgia,serif]"
       : theme.fontFamily === 'mono'
-      ? 'font-mono'
+      ? "font-['JetBrains_Mono','Noto_Sans_KR',monospace]"
+      : theme.fontFamily === 'ibm'
+      ? "font-['IBM_Plex_Sans_KR','Plus_Jakarta_Sans',sans-serif]"
       : "font-['Plus_Jakarta_Sans','Noto_Sans_KR',sans-serif]";
 
   const {

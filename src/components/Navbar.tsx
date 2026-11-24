@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     logoClickTimerRef.current = setTimeout(() => {
       logoClickCountRef.current = 0;
-    }, 4000);
+    }, 5000);
   };
 
   const countAll = releases.length;
@@ -100,10 +100,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Zone 1: Brand Wordmark */}
         <a
           href="#"
-          onClick={handleLogoAdminTrigger}
           className="group flex items-center gap-2 sm:gap-3 min-w-0 whitespace-nowrap text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
         >
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-black border border-white/20 overflow-hidden shrink-0 shadow-sm transition-transform group-hover:scale-105">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLogoAdminTrigger(e);
+            }}
+            className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-black border border-white/20 overflow-hidden shrink-0 shadow-sm transition-transform group-hover:scale-105 cursor-pointer"
+          >
             <img
               src={hero.logoUrl || '/assets/aistudio/KakaoTalk_20261029_152546267_01_40abeb0d.png'}
               alt="JG MUSIC STUDIO 로고"

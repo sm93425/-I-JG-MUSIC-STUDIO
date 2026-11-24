@@ -75,7 +75,9 @@ export interface ThemeConfig {
   textColor: string;
   mutedTextColor: string;
   borderColor: string;
-  fontFamily: 'sans' | 'serif' | 'mono';
+  fontFamily: 'sans' | 'ibm' | 'serif' | 'mono';
+  fontSizeScale?: number;
+  mobileFontSizeScale?: number;
 }
 
 export interface SiteContent {

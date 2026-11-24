@@ -18,6 +18,8 @@ export const INITIAL_THEME: ThemeConfig = {
   mutedTextColor: '#a3a3a3',
   borderColor: 'rgba(255, 255, 255, 0.1)',
   fontFamily: 'sans',
+  fontSizeScale: 100,
+  mobileFontSizeScale: 100,
 };
 
 export const INITIAL_SITE_CONTENT: SiteContent = {

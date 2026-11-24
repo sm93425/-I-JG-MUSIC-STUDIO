@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Lock,
-  Palette,
+  Type,
+  KeyRound,
   Edit3,
   Globe,
   Plus,
@@ -75,7 +76,8 @@ type AdminMainTab =
   | 'workInquiries'
   | 'categories'
   | 'homepage'
-  | 'theme'
+  | 'typography'
+  | 'password'
   | 'content'
   | 'seo'
   | `custom:${string}`;
@@ -183,6 +185,8 @@ const compressImageFile = (file: File, maxSize = 800): Promise<string> => {
   });
 };
 
+const AUTO_LOGOUT_MS = 5 * 60 * 1000;
+
 export const AdminModal: React.FC<AdminModalProps> = ({
   isOpen,
   onClose,
@@ -204,7 +208,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onResetAllData,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('jz_admin_auth') === 'true';
+    if (sessionStorage.getItem('jz_admin_auth') !== 'true') return false;
+    const closedAt = sessionStorage.getItem('jz_admin_closed_at');
+    if (closedAt && Date.now() - Number(closedAt) >= AUTO_LOGOUT_MS) {
+      sessionStorage.removeItem('jz_admin_auth');
+      sessionStorage.removeItem('jz_admin_closed_at');
+      return false;
+    }
+    return true;
   });
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
@@ -282,6 +293,16 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     artistOrProject: '',
   });
 
+  // --- Password Change State ---
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
+
   // Feedback notifications
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
@@ -290,13 +311,55 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setTimeout(() => setSavedNotice(null), 3000);
   };
 
+  // Auto-logout 5 minutes after closing AdminModal
+  useEffect(() => {
+    if (!isAuthenticated) {
+      sessionStorage.removeItem('jz_admin_closed_at');
+      return;
+    }
+
+    if (isOpen) {
+      const closedAt = sessionStorage.getItem('jz_admin_closed_at');
+      if (closedAt && Date.now() - Number(closedAt) >= AUTO_LOGOUT_MS) {
+        setIsAuthenticated(false);
+        sessionStorage.removeItem('jz_admin_auth');
+        sessionStorage.removeItem('jz_admin_closed_at');
+        setPasswordInput('');
+        return;
+      }
+      sessionStorage.removeItem('jz_admin_closed_at');
+      return;
+    }
+
+    const existingClosedAt = sessionStorage.getItem('jz_admin_closed_at');
+    const closedTimestamp = existingClosedAt ? Number(existingClosedAt) : Date.now();
+    if (!existingClosedAt) {
+      sessionStorage.setItem('jz_admin_closed_at', String(closedTimestamp));
+    }
+
+    const remaining = Math.max(0, AUTO_LOGOUT_MS - (Date.now() - closedTimestamp));
+    const timer = setTimeout(() => {
+      setIsAuthenticated(false);
+      sessionStorage.removeItem('jz_admin_auth');
+      sessionStorage.removeItem('jz_admin_closed_at');
+      setPasswordInput('');
+    }, remaining);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, isAuthenticated]);
+
   if (!isOpen) return null;
+
+  const getActiveAdminPassword = () => {
+    return localStorage.getItem('jz_admin_password') || '1234567890A!';
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === '1234567890A!') {
+    if (passwordInput === getActiveAdminPassword()) {
       setIsAuthenticated(true);
       sessionStorage.setItem('jz_admin_auth', 'true');
+      sessionStorage.removeItem('jz_admin_closed_at');
       setAuthError('');
     } else {
       setAuthError('비밀번호가 일치하지 않습니다.');
@@ -306,7 +369,35 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('jz_admin_auth');
+    sessionStorage.removeItem('jz_admin_closed_at');
     setPasswordInput('');
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordChangeError('');
+    setPasswordChangeSuccess('');
+
+    const currentActive = getActiveAdminPassword();
+    if (currentPasswordInput !== currentActive) {
+      setPasswordChangeError('기존 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    if (newPasswordInput.trim().length < 4) {
+      setPasswordChangeError('변경할 비밀번호는 4자 이상 입력해주세요.');
+      return;
+    }
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPasswordChangeError('새 비밀번호와 비밀번호 재확인이 일치하지 않습니다.');
+      return;
+    }
+
+    localStorage.setItem('jz_admin_password', newPasswordInput);
+    setCurrentPasswordInput('');
+    setNewPasswordInput('');
+    setConfirmPasswordInput('');
+    setPasswordChangeSuccess('비밀번호가 성공적으로 변경되었습니다. 다음 로그인부터 새 비밀번호가 적용됩니다.');
+    showSavedMessage('관리자 비밀번호가 변경되었습니다.');
   };
 
   // --- Release Manager Helpers ---
@@ -1210,15 +1301,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <div className="hidden md:block my-1 border-t border-white/10" />
 
               <button
-                onClick={() => setActiveTab('theme')}
+                onClick={() => setActiveTab('typography')}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                  activeTab === 'theme'
+                  activeTab === 'typography'
                     ? 'bg-white text-black font-semibold'
                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Palette className="h-4 w-4" />
-                <span>비주얼 & 테마 설정</span>
+                <Type className="h-4 w-4" />
+                <span>글씨체 & 글씨 크기</span>
               </button>
 
               <button
@@ -1243,6 +1334,22 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               >
                 <Globe className="h-4 w-4" />
                 <span>SEO & 검색 최적화</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('password');
+                  setPasswordChangeError('');
+                  setPasswordChangeSuccess('');
+                }}
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                  activeTab === 'password'
+                    ? 'bg-white text-black font-semibold'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <KeyRound className="h-4 w-4" />
+                <span>비밀번호 변경</span>
               </button>
 
               <div className="hidden md:block mt-auto pt-4 border-t border-white/10">
@@ -4338,150 +4445,351 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </div>
               )}
 
-              {/* TAB: THEME & VISUALS */}
-              {activeTab === 'theme' && (
+              {/* TAB: TYPOGRAPHY & FONT SIZE THEME */}
+              {activeTab === 'typography' && (
                 <div className="space-y-8 max-w-2xl">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+                    <div>
+                      <h3 className="text-xl font-bold text-white">
+                        글씨체 & 글씨 크기 테마 설정
+                      </h3>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        홈페이지 전체에 적용되는 서체와 PC·모바일 화면별 글씨 크기를 실시간으로 조절합니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTheme((prev) => ({
+                          ...prev,
+                          fontFamily: 'sans',
+                          fontSizeScale: 100,
+                          mobileFontSizeScale: 100,
+                        }));
+                        showSavedMessage('글씨체 및 글씨 크기가 기본값(100%)으로 복원되었습니다.');
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-300 hover:text-white border border-white/15 hover:bg-white/5 transition-colors shrink-0"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span>기본값 초기화</span>
+                    </button>
+                  </div>
+
+                  {/* Font Family Picker */}
+                  <div className="space-y-3">
+                    <label className="block text-xs font-semibold text-neutral-300">
+                      홈페이지 서체 (글씨체)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(
+                        [
+                          {
+                            id: 'sans',
+                            name: '모던 산스 (기본)',
+                            desc: 'Plus Jakarta Sans + Noto Sans KR',
+                            previewClass: "font-['Plus_Jakarta_Sans','Noto_Sans_KR',sans-serif]",
+                          },
+                          {
+                            id: 'ibm',
+                            name: 'IBM 플렉스 고딕',
+                            desc: 'IBM Plex Sans KR — 깔끔한 스튜디오 고딕',
+                            previewClass: "font-['IBM_Plex_Sans_KR',sans-serif]",
+                          },
+                          {
+                            id: 'serif',
+                            name: '에디토리얼 명조',
+                            desc: 'Noto Serif KR — 클래식 & 감성 세리프',
+                            previewClass: "font-['Noto_Serif_KR',Georgia,serif]",
+                          },
+                          {
+                            id: 'mono',
+                            name: '스튜디오 모노스페이스',
+                            desc: 'JetBrains Mono — 정밀한 프로덕션 서체',
+                            previewClass: "font-['JetBrains_Mono','Noto_Sans_KR',monospace]",
+                          },
+                        ] as const
+                      ).map((font) => {
+                        const isSelected = theme.fontFamily === font.id;
+                        return (
+                          <button
+                            key={font.id}
+                            type="button"
+                            onClick={() => {
+                              setTheme((prev) => ({ ...prev, fontFamily: font.id }));
+                              showSavedMessage(`서체가 [${font.name}]으로 변경되었습니다.`);
+                            }}
+                            className={`p-4 rounded-xl border text-left transition-all ${
+                              isSelected
+                                ? 'bg-white text-black border-white shadow-lg'
+                                : 'bg-neutral-900/80 text-neutral-300 border-white/10 hover:border-white/25'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`text-sm font-bold ${font.previewClass}`}>
+                                {font.name}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black text-white">
+                                  적용중
+                                </span>
+                              )}
+                            </div>
+                            <p
+                              className={`text-[11px] mb-2 ${
+                                isSelected ? 'text-neutral-600' : 'text-neutral-500'
+                              }`}
+                            >
+                              {font.desc}
+                            </p>
+                            <div
+                              className={`text-xs pt-2 border-t ${
+                                isSelected ? 'border-black/10 text-neutral-800' : 'border-white/5 text-neutral-300'
+                              } ${font.previewClass}`}
+                            >
+                              JG MUSIC STUDIO · 작곡·편곡·미디 레슨
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Desktop Font Size Scale */}
+                  <div className="p-5 rounded-xl border border-white/10 bg-neutral-900/60 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">PC 버전 전체 글씨 크기</h4>
+                        <p className="text-[11px] text-neutral-400 mt-0.5">
+                          태블릿·데스크톱 화면(640px 이상)에 적용되는 글자 비율입니다.
+                        </p>
+                      </div>
+                      <span className="text-sm font-mono font-bold text-white px-2.5 py-1 rounded bg-white/10">
+                        {theme.fontSizeScale ?? 100}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min={85}
+                      max={125}
+                      step={5}
+                      value={theme.fontSizeScale ?? 100}
+                      onChange={(e) =>
+                        setTheme((prev) => ({ ...prev, fontSizeScale: Number(e.target.value) }))
+                      }
+                      className="w-full accent-white cursor-pointer"
+                    />
+
+                    <div className="grid grid-cols-5 gap-2">
+                      {[90, 95, 100, 110, 120].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => {
+                            setTheme((prev) => ({ ...prev, fontSizeScale: val }));
+                            showSavedMessage(`PC 글씨 크기가 ${val}%로 설정되었습니다.`);
+                          }}
+                          className={`py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                            (theme.fontSizeScale ?? 100) === val
+                              ? 'bg-white text-black border-white'
+                              : 'bg-neutral-950 text-neutral-300 border-white/10 hover:border-white/25'
+                          }`}
+                        >
+                          {val === 100 ? '100% (기본)' : `${val}%`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mobile Font Size Scale */}
+                  <div className="p-5 rounded-xl border border-white/10 bg-neutral-900/60 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">모바일 버전 전체 글씨 크기</h4>
+                        <p className="text-[11px] text-neutral-400 mt-0.5">
+                          스마트폰 세로 화면(640px 미만)에 별도로 적용되는 글자 비율입니다.
+                        </p>
+                      </div>
+                      <span className="text-sm font-mono font-bold text-white px-2.5 py-1 rounded bg-white/10">
+                        {theme.mobileFontSizeScale ?? 100}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min={85}
+                      max={125}
+                      step={5}
+                      value={theme.mobileFontSizeScale ?? 100}
+                      onChange={(e) =>
+                        setTheme((prev) => ({
+                          ...prev,
+                          mobileFontSizeScale: Number(e.target.value),
+                        }))
+                      }
+                      className="w-full accent-white cursor-pointer"
+                    />
+
+                    <div className="grid grid-cols-5 gap-2">
+                      {[90, 95, 100, 110, 120].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => {
+                            setTheme((prev) => ({ ...prev, mobileFontSizeScale: val }));
+                            showSavedMessage(`모바일 글씨 크기가 ${val}%로 설정되었습니다.`);
+                          }}
+                          className={`py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                            (theme.mobileFontSizeScale ?? 100) === val
+                              ? 'bg-white text-black border-white'
+                              : 'bg-neutral-950 text-neutral-300 border-white/10 hover:border-white/25'
+                          }`}
+                        >
+                          {val === 100 ? '100% (기본)' : `${val}%`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: PASSWORD CHANGE */}
+              {activeTab === 'password' && (
+                <div className="space-y-6 max-w-lg">
                   <div className="pb-4 border-b border-white/10">
-                    <h3 className="text-xl font-bold text-white">
-                      비주얼 & 디자인 커스터마이징 (Theme Settings)
-                    </h3>
-                    <p className="text-xs text-neutral-400">
-                      웹사이트의 배경색, 액센트 포인트 컬러, 서체 스타일을 실시간으로 변경합니다.
+                    <h3 className="text-xl font-bold text-white">관리자 비밀번호 변경</h3>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      기존 비밀번호를 확인한 뒤 새로운 비밀번호를 2번 입력해 안전하게 변경합니다.
                     </p>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-300 mb-2">
-                      원클릭 테마 프리셋
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {[
-                        { name: 'Pure Obsidian', bg: '#0a0a0a', accent: '#ffffff', card: '#121212' },
-                        { name: 'Charcoal Studio', bg: '#141414', accent: '#e5e5e5', card: '#1c1c1c' },
-                        { name: 'Amber Glow', bg: '#0d0b09', accent: '#f59e0b', card: '#171412' },
-                        { name: 'Deep Midnight', bg: '#080b11', accent: '#38bdf8', card: '#0f172a' },
-                      ].map((preset) => (
+                  <form
+                    onSubmit={handleChangePassword}
+                    className="p-6 rounded-xl border border-white/10 bg-neutral-900/60 space-y-4"
+                  >
+                    <div>
+                      <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+                        기존 비밀번호 <span className="text-red-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showCurrentPw ? 'text' : 'password'}
+                          required
+                          placeholder="현재 사용 중인 비밀번호를 입력하세요"
+                          value={currentPasswordInput}
+                          onChange={(e) => {
+                            setCurrentPasswordInput(e.target.value);
+                            setPasswordChangeError('');
+                            setPasswordChangeSuccess('');
+                          }}
+                          className="w-full px-3.5 py-2.5 pr-10 text-xs bg-neutral-950 border border-white/10 rounded-md text-white placeholder-neutral-500 focus:outline-none focus:border-white/30"
+                        />
                         <button
-                          key={preset.name}
                           type="button"
-                          onClick={() => {
-                            setTheme((prev) => ({
-                              ...prev,
-                              backgroundColor: preset.bg,
-                              cardColor: preset.card,
-                              accentColor: preset.accent,
-                            }));
-                            showSavedMessage(`${preset.name} 테마가 적용되었습니다.`);
-                          }}
-                          className="p-3 rounded-lg border border-white/10 hover:border-white/30 text-left bg-neutral-900 transition-all flex flex-col justify-between"
+                          onClick={() => setShowCurrentPw((v) => !v)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-white"
+                          aria-label={showCurrentPw ? '비밀번호 숨기기' : '비밀번호 보기'}
                         >
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span
-                              className="w-4 h-4 rounded-full border border-white/20"
-                              style={{ background: preset.bg }}
-                            />
-                            <span
-                              className="w-4 h-4 rounded-full"
-                              style={{ background: preset.accent }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium text-white">{preset.name}</span>
+                          {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 rounded-xl border border-white/10 bg-neutral-900/60">
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-300 mb-2">
-                        배경 기본 색상 (Background)
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={theme.backgroundColor}
-                          onChange={(e) =>
-                            setTheme({ ...theme, backgroundColor: e.target.value })
-                          }
-                          className="h-10 w-14 rounded cursor-pointer bg-transparent border-0"
-                        />
-                        <span className="font-mono text-xs text-neutral-300">
-                          {theme.backgroundColor}
-                        </span>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-300 mb-2">
-                        포인트 액센트 색상 (Accent)
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={theme.accentColor}
-                          onChange={(e) => setTheme({ ...theme, accentColor: e.target.value })}
-                          className="h-10 w-14 rounded cursor-pointer bg-transparent border-0"
-                        />
-                        <span className="font-mono text-xs text-neutral-300">
-                          {theme.accentColor}
-                        </span>
+                    <div className="pt-2 border-t border-white/10 space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+                          변경할 비밀번호 <span className="text-red-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewPw ? 'text' : 'password'}
+                            required
+                            placeholder="새 비밀번호 (4자 이상)"
+                            value={newPasswordInput}
+                            onChange={(e) => {
+                              setNewPasswordInput(e.target.value);
+                              setPasswordChangeError('');
+                              setPasswordChangeSuccess('');
+                            }}
+                            className="w-full px-3.5 py-2.5 pr-10 text-xs bg-neutral-950 border border-white/10 rounded-md text-white placeholder-neutral-500 focus:outline-none focus:border-white/30"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPw((v) => !v)}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-white"
+                            aria-label={showNewPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                          >
+                            {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+                          변경할 비밀번호 재확인 <span className="text-red-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPw ? 'text' : 'password'}
+                            required
+                            placeholder="새 비밀번호를 한 번 더 입력하세요"
+                            value={confirmPasswordInput}
+                            onChange={(e) => {
+                              setConfirmPasswordInput(e.target.value);
+                              setPasswordChangeError('');
+                              setPasswordChangeSuccess('');
+                            }}
+                            className="w-full px-3.5 py-2.5 pr-10 text-xs bg-neutral-950 border border-white/10 rounded-md text-white placeholder-neutral-500 focus:outline-none focus:border-white/30"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPw((v) => !v)}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-white"
+                            aria-label={showConfirmPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                          >
+                            {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {confirmPasswordInput.length > 0 && (
+                          <p
+                            className={`mt-1.5 text-[11px] font-medium ${
+                              newPasswordInput === confirmPasswordInput
+                                ? 'text-emerald-400'
+                                : 'text-red-400'
+                            }`}
+                          >
+                            {newPasswordInput === confirmPasswordInput
+                              ? '새 비밀번호가 일치합니다.'
+                              : '새 비밀번호가 일치하지 않습니다.'}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-300 mb-2">
-                      타이포그래피 스타일 (Typography Style)
-                    </label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['sans', 'serif', 'mono'] as const).map((font) => (
-                        <button
-                          key={font}
-                          onClick={() => {
-                            setTheme({ ...theme, fontFamily: font });
-                            showSavedMessage(`서체가 ${font} 스타일로 변경되었습니다.`);
-                          }}
-                          className={`p-3 rounded-lg border text-xs font-semibold capitalize transition-all ${
-                            theme.fontFamily === font
-                              ? 'bg-white text-black border-white'
-                              : 'bg-neutral-900 text-neutral-400 border-white/10 hover:border-white/20'
-                          }`}
-                        >
-                          {font === 'sans' && 'Modern Sans (기본)'}
-                          {font === 'serif' && 'Editorial Serif'}
-                          {font === 'mono' && 'Studio Monospace'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    {passwordChangeError && (
+                      <div className="p-3 rounded-lg bg-red-950/50 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>{passwordChangeError}</span>
+                      </div>
+                    )}
 
-                  <div className="space-y-4 pt-4 border-t border-white/10">
-                    <h4 className="text-sm font-bold text-white">메인 히어로 문구 실시간 편집</h4>
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                        메인 헤드라인 (Hero Headline)
-                      </label>
-                      <input
-                        type="text"
-                        value={content.heroHeadline}
-                        onChange={(e) => setContent({ ...content, heroHeadline: e.target.value })}
-                        className="w-full px-3.5 py-2.5 text-xs bg-neutral-950 border border-white/10 rounded-md text-white focus:outline-none"
-                      />
+                    {passwordChangeSuccess && (
+                      <div className="p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 shrink-0" />
+                        <span>{passwordChangeSuccess}</span>
+                      </div>
+                    )}
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        className="w-full py-3 px-4 rounded-lg text-xs font-bold text-black bg-white hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                        <span>비밀번호 변경 저장</span>
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                        서브 헤드라인 (Hero Subheadline)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={content.heroSubheadline}
-                        onChange={(e) =>
-                          setContent({ ...content, heroSubheadline: e.target.value })
-                        }
-                        className="w-full px-3.5 py-2.5 text-xs bg-neutral-950 border border-white/10 rounded-md text-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
+                  </form>
                 </div>
               )}
 
