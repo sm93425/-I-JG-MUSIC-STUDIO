@@ -6,7 +6,8 @@ import {
   SeoConfig,
   SiteContent,
   ThemeConfig,
-  ConsultationInquiry
+  ConsultationInquiry,
+  HomepageConfig
 } from '../types';
 
 export const INITIAL_THEME: ThemeConfig = {
@@ -309,26 +310,28 @@ export const INITIAL_POSTS: Post[] = [
 export const INITIAL_INQUIRIES: ConsultationInquiry[] = [
   {
     id: 'inq-1',
+    inquiryType: 'lesson',
     name: '최현우',
     phone: '010-3491-8821',
     email: 'hwchoi@example.com',
-    courseId: 'course-intermediate',
+    courseId: '[전문반]미디 작곡',
     daw: 'Cubase 13',
     genre: 'K-Pop / R&B',
-    experienceLevel: '독학 1년, 비트메이킹 경험 있음',
+    experienceLevel: '기초(1년이내)',
     message: '혼자서 큐베이스로 비트는 찍는데 완곡 편곡과 믹싱이 너무 막막해서 1:1 레슨 상담받고 싶습니다. 주말 오후 시간대 가능할까요?',
     createdAt: '2026-03-01 14:20',
     status: 'pending'
   },
   {
     id: 'inq-2',
+    inquiryType: 'lesson',
     name: '박서연',
     phone: '010-9082-1244',
     email: 'seoyeon.music@example.com',
-    courseId: 'course-basic',
+    courseId: '[취미반]미디 작곡',
     daw: '처음 시작 (DAW 미보유)',
     genre: 'Lo-Fi / 인디 팝',
-    experienceLevel: '피아노 반주 가능, 미디는 완전 초보',
+    experienceLevel: '완전 입문(처음 시작)',
     message: '피아노는 칠 줄 아는데 컴퓨터로 음악을 만들어보고 싶습니다. 장비 구매부터 상담받을 수 있는지 궁금합니다.',
     createdAt: '2026-02-28 19:05',
     status: 'contacted'
@@ -341,3 +344,138 @@ export const INITIAL_SEO: SeoConfig = {
   ogImageUrl: '/src/assets/images/hero_music_studio_1794239965350.jpg',
   keywords: '제이지뮤직스튜디오, 큐베이스 레슨, 미디 레슨, 작곡 레슨, 편곡 레슨, 홍대 미디학원, 음원 발매, 비트메이킹',
 };
+
+export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
+  sectionOrder: ['hero', 'portfolio', 'pricing', 'productionPricing', 'lesson', 'contact'],
+  customCategories: [],
+  portfolioCategories: [
+    { id: 'MUSIC', label: '1. MUSIC', shortTag: 'MUSIC', aspectRatio: 'square' },
+    { id: 'PROGRAM', label: '2. PROGRAM', shortTag: 'PROGRAM', aspectRatio: 'poster' },
+    { id: 'BGM', label: '3. BGM', shortTag: 'BGM', aspectRatio: 'square' },
+  ],
+  sections: {
+    heroVisible: true,
+    portfolioVisible: true,
+    pricingVisible: true,
+    productionPricingVisible: true,
+    lessonVisible: true,
+    contactVisible: true,
+    footerVisible: true,
+  },
+  navLabels: {
+    portfolio: '발매 작품',
+    pricing: '레슨 금액',
+    productionPricing: '음원 제작 견적',
+    lesson: '레슨 문의',
+    workContact: '작업 문의',
+    location: '오시는 길',
+    topCta: '방문 상담 예약',
+  },
+  hero: {
+    ctaText: '1:1 방문 상담 예약',
+    logoUrl: '/assets/aistudio/KakaoTalk_20261029_152546267_01_40abeb0d.png',
+  },
+  portfolio: {
+    badge: 'DISCOGRAPHY',
+    title: '발매 작품',
+    subtitle: '공식 발매 음원 및 OST DISCOGRAPHY',
+    allTabLabel: '전체',
+    musicTabLabel: '1. MUSIC',
+    programTabLabel: '2. PROGRAM',
+    bgmTabLabel: '3. BGM',
+  },
+  lessonPricing: {
+    badge: 'RATES & ESTIMATES',
+    title: 'LESSON PRICE',
+    subtitle: '제이지뮤직스튜디오의 1:1 개인 레슨 수업 금액을\n안내해 드립니다.',
+    cardKicker: 'JG MUSIC STUDIO · LESSON PRICE',
+    cardTitle: '레슨 금액표',
+    cardSubtitle: '1:1 PRIVATE LESSON · 주 1회 / 월 4회 기준',
+    cardBadge: '1:1 개인 레슨',
+    plans: [
+      { id: 'plan-1', name: 'MIDI 취미반', time: '60분', price: '180,000원', popular: true },
+      { id: 'plan-2', name: 'MIDI 전문반', time: '90분', price: '280,000원', popular: false },
+      { id: 'plan-3', name: '피아노 반주 취미반', time: '60분', price: '160,000원', popular: false },
+      { id: 'plan-4', name: 'MIDI 원데이 클래스', time: '80분', price: '60,000원', popular: false, isOneDay: true },
+    ],
+    footnotePrimary: '※월 수강료는 주 1회, 월 4회 기준입니다.\n원데이 클래스는 별도 입니다.',
+    footnoteSecondary: '모든 수업은 대표 프로듀서의 1:1 직강으로 진행됩니다.',
+    ctaText: '1:1 레슨 방문 상담 예약하기',
+  },
+  productionPricing: {
+    badge: 'PRODUCTION ESTIMATE',
+    title: 'MUSIC PRODUCTION',
+    subtitle: '제이지뮤직스튜디오의 음원 제작 및 편곡 견적을\n안내해 드립니다.',
+    cardKicker: 'JG MUSIC STUDIO · PRODUCTION ESTIMATE',
+    cardTitle: '음원 제작 견적',
+    cardSubtitle: 'MUSIC PRODUCTION & ARRANGEMENT',
+    cardBadge: '',
+    services: [
+      { id: 'svc-1', service: '음원 제작 올인원', price: '1,200,000원~', priceNote: '(가요 4분 기준)', note: '작˙편곡부터 믹싱/마스터링까지\n풀 프로덕션' },
+      { id: 'svc-2', service: '작곡', price: '500,000원~', priceNote: '(가요 4분 기준)', note: '메인 멜로디 작곡' },
+      { id: 'svc-3', service: '편곡', price: '500,000원~', priceNote: '(가요 4분 기준)', note: '장르별 음원 편곡' },
+      { id: 'svc-4', service: '미디 스트링 편곡', price: '250,000원', priceNote: '(가요 4분 기준)', note: '가요 RMO 편곡' },
+      { id: 'svc-5', service: '피아노 편곡', price: '200,000원', priceNote: '(가요 4분 기준)', note: '가요 피아노 편곡' },
+      { id: 'svc-6', service: 'MR / BGM 제작', price: '상담 문의', note: '커버음원 MR / 각종 BGM 등' },
+    ],
+    footnotePrimary: '곡 길이, 트랙 구성 및 마감 일정에 따라 상세 견적이 조율될 수 있습니다.',
+    footnoteSecondary: '방송 OST, 웹툰/드라마 테마곡 및 상업 발매 음원 제작 레퍼런스를 보유하고 있습니다.',
+    ctaText: '음원 제작 및 작업 의뢰 문의하기',
+  },
+  lessonSection: {
+    badge: 'START YOUR MUSIC',
+    title: '레슨 상담 신청',
+    cards: [
+      {
+        id: 'card-1',
+        title: '나만의 음악적 방향을 찾아가는\n현업 프로듀서의 1:1 개인 레슨',
+        description: '처음 음악을 시작하는 순간부터 자신만의 음악을 완성하기까지, 각자의 속도와 목표에 맞춰 함께합니다.',
+      },
+      {
+        id: 'card-2',
+        title: '디테일이 만드는 음악의 차이',
+        description: '작은 차이가 모여 하나의 완성도를 만듭니다.\n사운드의 질감과 공간감, 섬세한 표현까지\n음악의 디테일을 깊이 있게 다룹니다.',
+      },
+      {
+        id: 'card-3',
+        title: '무료 방문 상담 신청',
+        description: '직접 방문하여 체험 레슨을 경험해보세요.\n레슨 과정부터 음악과 관련된 다양한 궁금증까지 편안하게 상담하실 수 있습니다.',
+      },
+    ],
+    ctaKicker: 'FAST CONSULTATION',
+    ctaTitle: '지금 바로 1:1 맞춤 상담을 예약하세요',
+    ctaButtonText: '레슨 상담 신청하기',
+  },
+  contactSection: {
+    kicker: 'LOCATION & CONSULTATION',
+    title: '방문 상담 예약',
+    subtitle: '방문 및 체험레슨은 사전 예약제로 운영됩니다.',
+    locationCardTitle: '스튜디오 위치 안내',
+    regionTag: 'SUWON-SI, GYEONGGI-DO',
+    landmarkTag: '수원 호매실',
+    roomTag: '202호 (사전예약제)',
+    mapLinkUrl: 'https://map.kakao.com',
+    kakaoUrl: 'https://pf.kakao.com/_sQkxeX',
+    instagramHandle: '@jg.musicstudio',
+    weekdayHours: '평일 12:00 ~ 23:00 (사전 예약 필수)',
+    weekendHours: '주말 11:00 ~ 18:00 (사전 예약 필수)',
+    lessonCourses: ['[취미반]미디 작곡', '[전문반]미디 작곡', '[80분]원데이클래스'],
+    productionTypes: [
+      '음원 제작 (Full Production)',
+      '작곡 및 편곡 (Composition & Arrangement)',
+      'MIDI 스트링 편곡 (MIDI String Arrangement)',
+      '피아노 편곡 (Piano Arrangement)',
+    ],
+    experienceLevels: ['완전 입문(처음 시작)', '기초(1년이내)', '중급(3년이내)', '고급(5년이상)'],
+    submitNotice: '상담 신청 이후 개별적으로 연락 드립니다.',
+  },
+  footerSection: {
+    tagline: '작곡 · 편곡 | MIDI 작곡 레슨 I 스트링 편곡',
+    businessInfo: '제이지뮤직스튜디오(JG MUSIC STUDIO) · 대표 : 장성민',
+    naverPcUrl:
+      'https://map.naver.com/p/entry/place/2052860666?placePath=%2Fhome%3Fentry%3Dplt%26from%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202611190047%26locale%3Dko%26svcName%3Dmap_pcv5&searchType=place&lng=126.9553560&lat=37.2671906&c=15.00,0,0,0,dh',
+    naverMobileUrl:
+      'https://m.place.naver.com/place/2052860666/home?entry=pll&abtExp=N-NMB-COV-26-MED%3A3&bk_query=%EC%A0%9C%EC%9D%B4%EC%A7%80%EB%AE%A4%EC%A7%81',
+  },
+};
+

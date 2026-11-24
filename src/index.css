@@ -2,8 +2,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  html {
+  html,
+  body {
     scroll-behavior: smooth;
+    overflow-x: clip;
+    max-width: 100%;
   }
 }
 

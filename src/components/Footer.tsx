@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, Instagram } from 'lucide-react';
-import { SiteContent } from '../types';
+import { HomepageConfig, SiteContent } from '../types';
+import { INITIAL_HOMEPAGE_CONFIG } from '../data/initialData';
 
 interface FooterProps {
   content: SiteContent;
-  onOpenAdmin: () => void;
+  homepageConfig?: HomepageConfig;
 }
 
-const NAVER_PC_URL =
-  'https://map.naver.com/p/entry/place/2052860666?placePath=%2Fhome%3Fentry%3Dplt%26from%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202611190047%26locale%3Dko%26svcName%3Dmap_pcv5&searchType=place&lng=126.9553560&lat=37.2671906&c=15.00,0,0,0,dh';
-
-const NAVER_MOBILE_URL =
-  'https://m.place.naver.com/place/2052860666/home?entry=pll&abtExp=N-NMB-COV-26-MED%3A3&bk_query=%EC%A0%9C%EC%9D%B4%EC%A7%80%EB%AE%A4%EC%A7%81';
-
-export const Footer: React.FC<FooterProps> = ({ content, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({
+  content,
+  homepageConfig = INITIAL_HOMEPAGE_CONFIG,
+}) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -32,30 +30,32 @@ export const Footer: React.FC<FooterProps> = ({ content, onOpenAdmin }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const { footerSection, contactSection } = homepageConfig;
+
   return (
-    <footer className="border-t border-white/10 bg-[#070707] text-neutral-400 py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/5">
+    <footer className="border-t border-white/10 bg-[#070707] text-neutral-400 py-12 sm:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 sm:gap-8 pb-8 sm:pb-12 border-b border-white/5">
           {/* Brand */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold tracking-tight text-white">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[15px] sm:text-base font-bold tracking-tight text-white">
                 {content.studioName}
               </span>
-              <span className="text-xs text-neutral-500 font-mono">
+              <span className="text-[11px] sm:text-xs text-neutral-500 font-mono">
                 {content.studioSubName}
               </span>
             </div>
-            <p className="text-xs text-neutral-400 max-w-md leading-relaxed font-medium">
-              작곡 · 편곡 | MIDI 작곡 레슨 I 스트링 편곡
+            <p className="text-[11px] sm:text-xs text-neutral-400 max-w-md leading-relaxed font-medium break-keep">
+              {footerSection.tagline}
             </p>
           </div>
 
           {/* Social Links & Back to Top */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-2 sm:gap-3">
               <a
-                href="https://www.instagram.com/jg.musicstudio/"
+                href={content.instagramUrl || 'https://www.instagram.com/jg.musicstudio/'}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram"
@@ -64,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ content, onOpenAdmin }) => {
                 <Instagram className="h-4 w-4" />
               </a>
               <a
-                href="https://pf.kakao.com/_sQkxeX"
+                href={contactSection.kakaoUrl || 'https://pf.kakao.com/_sQkxeX'}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="KakaoTalk"
@@ -75,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({ content, onOpenAdmin }) => {
                 </svg>
               </a>
               <a
-                href={isMobile ? NAVER_MOBILE_URL : NAVER_PC_URL}
+                href={isMobile ? footerSection.naverMobileUrl : footerSection.naverPcUrl}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Naver Place"
@@ -99,23 +99,12 @@ export const Footer: React.FC<FooterProps> = ({ content, onOpenAdmin }) => {
         </div>
 
         {/* Business Details */}
-        <div className="pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-neutral-400">
-          <div className="space-y-1">
-            <p>
-              제이지뮤직스튜디오(JG MUSIC STUDIO) · 대표 : 장성민
+        <div className="pt-6 sm:pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[11px] sm:text-xs text-neutral-400">
+          <div className="space-y-1 break-keep">
+            <p>{footerSection.businessInfo}</p>
+            <p className="whitespace-pre-line leading-relaxed">
+              {`${content.studioAddress}\n문의 : ${content.contactPhone}`}
             </p>
-            <p>
-              {content.studioAddress} · 문의: {content.contactPhone}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 text-neutral-400">
-            <button
-              onClick={onOpenAdmin}
-              className="hover:text-white transition-colors underline underline-offset-4"
-            >
-              스튜디오 관리자 모드
-            </button>
           </div>
         </div>
       </div>
