@@ -309,36 +309,7 @@ export const INITIAL_POSTS: Post[] = [
   }
 ];
 
-export const INITIAL_INQUIRIES: ConsultationInquiry[] = [
-  {
-    id: 'inq-1',
-    inquiryType: 'lesson',
-    name: '최현우',
-    phone: '010-3491-8821',
-    email: 'hwchoi@example.com',
-    courseId: '[전문반]미디 작곡',
-    daw: 'Cubase 13',
-    genre: 'K-Pop / R&B',
-    experienceLevel: '기초(1년이내)',
-    message: '혼자서 큐베이스로 비트는 찍는데 완곡 편곡과 믹싱이 너무 막막해서 1:1 레슨 상담받고 싶습니다. 주말 오후 시간대 가능할까요?',
-    createdAt: '2026-03-01 14:20',
-    status: 'pending'
-  },
-  {
-    id: 'inq-2',
-    inquiryType: 'lesson',
-    name: '박서연',
-    phone: '010-9082-1244',
-    email: 'seoyeon.music@example.com',
-    courseId: '[취미반]미디 작곡',
-    daw: '처음 시작 (DAW 미보유)',
-    genre: 'Lo-Fi / 인디 팝',
-    experienceLevel: '완전 입문(처음 시작)',
-    message: '피아노는 칠 줄 아는데 컴퓨터로 음악을 만들어보고 싶습니다. 장비 구매부터 상담받을 수 있는지 궁금합니다.',
-    createdAt: '2026-02-28 19:05',
-    status: 'contacted'
-  }
-];
+export const INITIAL_INQUIRIES: ConsultationInquiry[] = [];
 
 export const INITIAL_SEO: SeoConfig = {
   metaTitle: '제이지뮤직스튜디오 | JZ Music Studio - 작곡·편곡·미디 레슨',
@@ -413,9 +384,9 @@ export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
     cardSubtitle: 'MUSIC PRODUCTION & ARRANGEMENT',
     cardBadge: '',
     services: [
-      { id: 'svc-1', service: '음원 제작 올인원', price: '1,200,000원~', priceNote: '(가요 4분 기준)', note: '작˙편곡부터 믹싱/마스터링까지\n풀 프로덕션' },
-      { id: 'svc-2', service: '작곡', price: '500,000원~', priceNote: '(가요 4분 기준)', note: '메인 멜로디 작곡' },
-      { id: 'svc-3', service: '편곡', price: '500,000원~', priceNote: '(가요 4분 기준)', note: '장르별 음원 편곡' },
+      { id: 'svc-1', service: '음원 제작 올인원', price: '상담 문의', note: '작˙편곡부터 믹싱/마스터링까지\n풀 프로덕션' },
+      { id: 'svc-2', service: '작곡', price: '상담 문의', note: '메인 멜로디 작곡' },
+      { id: 'svc-3', service: '편곡', price: '상담 문의', note: '장르별 음원 편곡' },
       { id: 'svc-4', service: '미디 스트링 편곡', price: '250,000원', priceNote: '(가요 4분 기준)', note: '가요 RMO 편곡' },
       { id: 'svc-5', service: '피아노 편곡', price: '200,000원', priceNote: '(가요 4분 기준)', note: '가요 피아노 편곡' },
       { id: 'svc-6', service: 'MR / BGM 제작', price: '상담 문의', note: '커버음원 MR / 각종 BGM 등' },
@@ -470,14 +441,30 @@ export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
     ],
     experienceLevels: ['완전 입문(처음 시작)', '기초(1년이내)', '중급(3년이내)', '고급(5년이상)'],
     submitNotice: '상담 신청 이후 개별적으로 연락 드립니다.',
+    notificationEmail: 'sm93425@naver.com',
   },
   footerSection: {
     tagline: '작곡 · 편곡 | MIDI 작곡 레슨 I 스트링 편곡',
-    businessInfo: '제이지뮤직스튜디오(JG MUSIC STUDIO) · 대표 : 장성민',
+    businessInfo: '제이지뮤직스튜디오(JG MUSIC STUDIO) · 대표 : 장성민 / 사업자번호 : 667-13-02892',
     naverPcUrl:
       'https://map.naver.com/p/entry/place/2052860666?placePath=%2Fhome%3Fentry%3Dplt%26from%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202611190047%26locale%3Dko%26svcName%3Dmap_pcv5&searchType=place&lng=126.9553560&lat=37.2671906&c=15.00,0,0,0,dh',
     naverMobileUrl:
       'https://m.place.naver.com/place/2052860666/home?entry=pll&abtExp=N-NMB-COV-26-MED%3A3&bk_query=%EC%A0%9C%EC%9D%B4%EC%A7%80%EB%AE%A4%EC%A7%81',
+  },
+  eventPopup: {
+    enabled: true,
+    badge: 'BLACK FRIDAY EVENT',
+    title: '블랙프라이데이 특가 행사',
+    headline: 'A-Z까지 음원 제작 올인원',
+    originalPrice: '150만원',
+    salePrice: '89만원!!!!',
+    periodText: '(~12월31일까지)',
+    secondaryHeadline: '미디 스트링 풀 편곡',
+    secondaryOriginalPrice: '25만원',
+    secondarySalePrice: '20만원!!!!',
+    secondaryPeriodText: '(12월 31일까지)',
+    description: '작곡 · 편곡부터 믹싱/마스터링까지\n풀 프로덕션 패키지 특별 프로모션',
+    ctaText: '특가 음원 제작 문의하기',
   },
 };
 

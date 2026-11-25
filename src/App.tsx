@@ -36,6 +36,15 @@ import { BlogReviews } from './components/BlogReviews';
 import { ContactSection } from './components/ContactSection';
 import { CustomSectionRenderer } from './components/CustomSectionRenderer';
 import { Footer } from './components/Footer';
+import { EventPopupModal } from './components/EventPopupModal';
+
+const getTodayDateKey = (): string => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
 
 const AdminModal = lazy(() =>
   import('./components/AdminModal').then((mod) => ({ default: mod.AdminModal }))
@@ -93,24 +102,24 @@ const mergeHomepageConfig = (saved: Partial<HomepageConfig> | null): HomepageCon
               svc.note === '작·편곡부터 믹싱/마스터링까지 풀 프로덕션'
                 ? '작˙편곡부터 믹싱/마스터링까지\n풀 프로덕션'
                 : svc.note,
-            price: svc.price === '상담 문의' ? '1,200,000원~' : svc.price,
-            priceNote: svc.price === '상담 문의' ? '(가요 4분 기준)' : svc.priceNote,
+            price: svc.price === '1,200,000원~' ? '상담 문의' : svc.price,
+            priceNote: svc.price === '1,200,000원~' ? undefined : svc.priceNote,
           };
         }
         if (svc.id === 'svc-2') {
           return {
             ...svc,
             note: svc.note === '메인 멜로디 및 트랙 작곡' ? '메인 멜로디 작곡' : svc.note,
-            price: svc.price === '상담 문의' ? '500,000원~' : svc.price,
-            priceNote: svc.price === '상담 문의' ? '(가요 4분 기준)' : svc.priceNote,
+            price: svc.price === '500,000원~' ? '상담 문의' : svc.price,
+            priceNote: svc.price === '500,000원~' ? undefined : svc.priceNote,
           };
         }
         if (svc.id === 'svc-3') {
           return {
             ...svc,
             note: svc.note === '장르별 상업 음원 표준 편곡' ? '장르별 음원 편곡' : svc.note,
-            price: svc.price === '상담 문의' ? '500,000원~' : svc.price,
-            priceNote: svc.price === '상담 문의' ? '(가요 4분 기준)' : svc.priceNote,
+            price: svc.price === '500,000원~' ? '상담 문의' : svc.price,
+            priceNote: svc.price === '500,000원~' ? undefined : svc.priceNote,
           };
         }
         if (
@@ -163,10 +172,22 @@ const mergeHomepageConfig = (saved: Partial<HomepageConfig> | null): HomepageCon
         saved.contactSection?.experienceLevels ||
         INITIAL_HOMEPAGE_CONFIG.contactSection.experienceLevels,
     },
-    footerSection: {
-      ...INITIAL_HOMEPAGE_CONFIG.footerSection,
-      ...(saved.footerSection || {}),
-    },
+    footerSection: (() => {
+      const mergedFooter = {
+        ...INITIAL_HOMEPAGE_CONFIG.footerSection,
+        ...(saved.footerSection || {}),
+      };
+      if (mergedFooter.businessInfo === '제이지뮤직스튜디오(JG MUSIC STUDIO) · 대표 : 장성민') {
+        mergedFooter.businessInfo = INITIAL_HOMEPAGE_CONFIG.footerSection.businessInfo;
+      }
+      return mergedFooter;
+    })(),
+    eventPopup: INITIAL_HOMEPAGE_CONFIG.eventPopup
+      ? {
+          ...INITIAL_HOMEPAGE_CONFIG.eventPopup,
+          ...(saved.eventPopup || {}),
+        }
+      : saved.eventPopup,
   };
 };
 
@@ -261,7 +282,14 @@ export default function App() {
   const [inquiries, setInquiries] = useState<ConsultationInquiry[]>(() => {
     try {
       const saved = localStorage.getItem('jz_inquiries');
-      return saved ? JSON.parse(saved) : INITIAL_INQUIRIES;
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(
+        (inq: ConsultationInquiry) =>
+          !(inq.id === 'inq-1' && inq.name === '최현우') &&
+          !(inq.id === 'inq-2' && inq.name === '박서연')
+      );
     } catch {
       return INITIAL_INQUIRIES;
     }
@@ -279,6 +307,14 @@ export default function App() {
   const [selectedCourseForConsult, setSelectedCourseForConsult] = useState<string>('');
   const [selectedReleaseCategory, setSelectedReleaseCategory] = useState<ReleaseCategory>('ALL');
   const [activeInquiryType, setActiveInquiryType] = useState<'lesson' | 'production'>('lesson');
+  const [isEventPopupOpen, setIsEventPopupOpen] = useState<boolean>(() => {
+    try {
+      if (homepageConfig.eventPopup?.enabled === false) return false;
+      return localStorage.getItem('jz_event_popup_hide_date') !== getTodayDateKey();
+    } catch {
+      return true;
+    }
+  });
 
   // --- Auto-persist effects ---
   useEffect(() => {
@@ -332,23 +368,63 @@ export default function App() {
     localStorage.setItem('jz_inquiries', JSON.stringify(inquiries));
   }, [inquiries]);
 
-  // Handle consultation inquiry submit
-  const handleConsultationSubmit = (
+  // Handle consultation inquiry submit & send notification email
+  const handleConsultationSubmit = async (
     inquiryData: Omit<ConsultationInquiry, 'id' | 'createdAt' | 'status'>
   ) => {
+    const createdAt = new Date().toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     const newInquiry: ConsultationInquiry = {
       ...inquiryData,
       id: `inq-${Date.now()}`,
-      createdAt: new Date().toLocaleString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      createdAt,
       status: 'pending',
     };
     setInquiries((prev) => [newInquiry, ...prev]);
+
+    const targetEmail =
+      homepageConfig.contactSection.notificationEmail?.trim() || 'sm93425@naver.com';
+    const inquiryCategoryLabel =
+      inquiryData.inquiryType === 'production' ? '작업 의뢰 / 문의' : '레슨 상담 신청';
+
+    try {
+      const response = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(targetEmail)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            _subject: `제이지뮤직스튜디오 상담신청 문의 (${inquiryCategoryLabel} - ${inquiryData.name})`,
+            _template: 'table',
+            _captcha: 'false',
+            ...(inquiryData.email?.trim() ? { _replyto: inquiryData.email.trim() } : {}),
+            문의_구분: inquiryCategoryLabel,
+            신청자_이름: inquiryData.name,
+            연락처: inquiryData.phone,
+            이메일: inquiryData.email?.trim() || '미입력',
+            선택_항목: inquiryData.courseId,
+            현재_음악_경험: inquiryData.experienceLevel,
+            문의_내용: inquiryData.message?.trim() || '미입력',
+            접수_일시: createdAt,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.warn('Consultation email notification returned non-OK status:', response.status);
+      }
+    } catch (err) {
+      console.warn('Failed to send consultation email notification:', err);
+    }
   };
 
   // Reset all data to factory initial state
@@ -536,6 +612,27 @@ export default function App() {
         <Footer
           content={siteContent}
           homepageConfig={homepageConfig}
+        />
+      )}
+
+      {/* Event Promo Popup */}
+      {homepageConfig.eventPopup && homepageConfig.eventPopup.enabled && (
+        <EventPopupModal
+          isOpen={isEventPopupOpen}
+          config={homepageConfig.eventPopup}
+          onClose={() => setIsEventPopupOpen(false)}
+          onDismissToday={() => {
+            try {
+              localStorage.setItem('jz_event_popup_hide_date', getTodayDateKey());
+            } catch {
+              // ignore storage errors
+            }
+            setIsEventPopupOpen(false);
+          }}
+          onAction={() => {
+            setIsEventPopupOpen(false);
+            scrollToContact('production');
+          }}
         />
       )}
 

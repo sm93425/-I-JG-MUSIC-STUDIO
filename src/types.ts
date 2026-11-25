@@ -260,6 +260,7 @@ export interface HomepageConfig {
     productionTypes: string[];
     experienceLevels: string[];
     submitNotice: string;
+    notificationEmail?: string;
   };
   footerSection: {
     tagline: string;
@@ -267,4 +268,21 @@ export interface HomepageConfig {
     naverPcUrl: string;
     naverMobileUrl: string;
   };
+  eventPopup?: EventPopupConfig;
+}
+
+export interface EventPopupConfig {
+  enabled: boolean;
+  badge: string;
+  title: string;
+  headline: string;
+  originalPrice: string;
+  salePrice: string;
+  periodText: string;
+  secondaryHeadline?: string;
+  secondaryOriginalPrice?: string;
+  secondarySalePrice?: string;
+  secondaryPeriodText?: string;
+  description: string;
+  ctaText: string;
 }

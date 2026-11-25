@@ -19,7 +19,9 @@ interface ContactSectionProps {
   selectedCourseId?: string;
   activeInquiryType?: 'lesson' | 'production';
   onInquiryTypeChange?: (type: 'lesson' | 'production') => void;
-  onSubmitInquiry: (inquiry: Omit<ConsultationInquiry, 'id' | 'createdAt' | 'status'>) => void;
+  onSubmitInquiry: (
+    inquiry: Omit<ConsultationInquiry, 'id' | 'createdAt' | 'status'>
+  ) => void | Promise<void>;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
@@ -61,6 +63,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
@@ -94,30 +97,35 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }));
   }, [lessonCourses, productionTypes, experienceLevels]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!formData.name.trim() || !formData.phone.trim()) {
       setErrorMsg('이름과 연락처를 입력해주세요.');
       return;
     }
 
     setErrorMsg('');
-    onSubmitInquiry({
-      inquiryType,
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      courseId:
-        inquiryType === 'production'
-          ? formData.productionType
-          : formData.courseId,
-      daw: formData.daw,
-      genre: formData.genre,
-      experienceLevel: formData.experienceLevel,
-      message: formData.message,
-    });
-
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      await onSubmitInquiry({
+        inquiryType,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        courseId:
+          inquiryType === 'production'
+            ? formData.productionType
+            : formData.courseId,
+        daw: formData.daw,
+        genre: formData.genre,
+        experienceLevel: formData.experienceLevel,
+        message: formData.message,
+      });
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -472,11 +480,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-6 text-[13px] sm:text-sm font-semibold text-black bg-white hover:bg-neutral-200 rounded-md transition-all flex items-center justify-center gap-2 shadow-lg"
+                      disabled={isSubmitting}
+                      className="w-full py-3.5 px-6 text-[13px] sm:text-sm font-semibold text-black bg-white hover:bg-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed rounded-md transition-all flex items-center justify-center gap-2 shadow-lg"
                     >
                       <Send className="h-4 w-4" />
                       <span>
-                        {inquiryType === 'lesson'
+                        {isSubmitting
+                          ? '상담 신청 접수 중...'
+                          : inquiryType === 'lesson'
                           ? '1:1 방문 상담 신청하기'
                           : '작업 의뢰 문의 접수하기'}
                       </span>

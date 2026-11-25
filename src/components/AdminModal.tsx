@@ -91,7 +91,8 @@ type HomepageSubTab =
   | 'productionPricing'
   | 'lessonSection'
   | 'contactSection'
-  | 'footerSection';
+  | 'footerSection'
+  | 'eventPopup';
 
 const BUILTIN_SECTION_META: Record<
   string,
@@ -927,6 +928,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     { key: 'lessonSection', label: '레슨 문의' },
     { key: 'contactSection', label: '방문 상담 · 위치 · 폼' },
     { key: 'footerSection', label: '푸터 설정' },
+    { key: 'eventPopup', label: '이벤트 팝업' },
   ];
 
   const activeCustomCategory = activeTab.startsWith('custom:')
@@ -940,12 +942,27 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     isWork: boolean
   ) => (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-white/10 flex items-center justify-between">
+      <div className="pb-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-xl font-bold text-white">{title}</h3>
           <p className="text-xs text-neutral-400 mt-1">{description}</p>
         </div>
-        <span className="text-xs font-mono text-neutral-400">총 {list.length}건</span>
+        <span className="text-xs font-mono text-neutral-400 shrink-0">총 {list.length}건</span>
+      </div>
+
+      {/* Email Notification Info Banner */}
+      <div className="p-3.5 rounded-xl border border-white/10 bg-neutral-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div className="space-y-0.5">
+          <p className="text-neutral-200 font-semibold">
+            알림 메일 수신 주소:{' '}
+            <span className="font-mono text-white">
+              {homepageConfig.contactSection.notificationEmail?.trim() || 'sm93425@naver.com'}
+            </span>
+          </p>
+          <p className="text-[11px] text-neutral-400">
+            상담 접수 시 위 메일로 &quot;제이지뮤직스튜디오 상담신청 문의&quot;가 자동 발송됩니다. (최초 1회 테스트 접수 후 네이버 메일함에서 FormSubmit 활성화 링크를 클릭하시면 이후 즉시 수신됩니다.)
+          </p>
+        </div>
       </div>
 
       {list.length === 0 ? (
@@ -4324,24 +4341,50 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           </div>
                         </div>
 
-                        <div className="pt-3 border-t border-white/10">
-                          <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                            신청 버튼 하단 안내 문구
-                          </label>
-                          <input
-                            type="text"
-                            value={homepageConfig.contactSection.submitNotice}
-                            onChange={(e) =>
-                              setHomepageConfig((prev) => ({
-                                ...prev,
-                                contactSection: {
-                                  ...prev.contactSection,
-                                  submitNotice: e.target.value,
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
-                          />
+                        <div className="pt-3 border-t border-white/10 space-y-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                              신청 버튼 하단 안내 문구
+                            </label>
+                            <input
+                              type="text"
+                              value={homepageConfig.contactSection.submitNotice}
+                              onChange={(e) =>
+                                setHomepageConfig((prev) => ({
+                                  ...prev,
+                                  contactSection: {
+                                    ...prev.contactSection,
+                                    submitNotice: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="w-full px-3 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                              상담 신청 알림 수신 이메일
+                            </label>
+                            <input
+                              type="email"
+                              value={
+                                homepageConfig.contactSection.notificationEmail ??
+                                'sm93425@naver.com'
+                              }
+                              onChange={(e) =>
+                                setHomepageConfig((prev) => ({
+                                  ...prev,
+                                  contactSection: {
+                                    ...prev.contactSection,
+                                    notificationEmail: e.target.value,
+                                  },
+                                }))
+                              }
+                              placeholder="sm93425@naver.com"
+                              className="w-full px-3 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4445,6 +4488,218 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {/* SUB-TAB: EVENT POPUP */}
+                  {homepageSubTab === 'eventPopup' && (
+                    <div className="space-y-4 max-w-3xl p-5 rounded-xl border border-white/10 bg-neutral-900/50">
+                      {(() => {
+                        const popup =
+                          homepageConfig.eventPopup || INITIAL_HOMEPAGE_CONFIG.eventPopup!;
+                        const updatePopup = (patch: Partial<typeof popup>) =>
+                          setHomepageConfig((prev) => ({
+                            ...prev,
+                            eventPopup: {
+                              ...(prev.eventPopup || INITIAL_HOMEPAGE_CONFIG.eventPopup!),
+                              ...patch,
+                            },
+                          }));
+                        return (
+                          <>
+                            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                              <div>
+                                <h4 className="text-sm font-bold text-white">
+                                  이벤트 팝업창 설정
+                                </h4>
+                                <p className="text-[11px] text-neutral-400 mt-0.5">
+                                  홈페이지 첫 진입 시 노출되는 프로모션 팝업의 노출 여부와 문구를 관리합니다.
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    localStorage.removeItem('jz_event_popup_hide_date');
+                                    showSavedMessage(
+                                      '오늘 하루 보지 않기 기록이 초기화되었습니다.'
+                                    );
+                                  }}
+                                  className="px-3 py-1 rounded text-xs font-medium bg-neutral-950 text-neutral-300 hover:text-white border border-white/15"
+                                >
+                                  오늘 숨김 초기화
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => updatePopup({ enabled: !popup.enabled })}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-bold border ${
+                                    popup.enabled
+                                      ? 'bg-white text-black border-white'
+                                      : 'bg-neutral-950 text-neutral-400 border-white/15'
+                                  }`}
+                                >
+                                  {popup.enabled ? '노출 중' : '숨김'}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  상단 배지
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.badge}
+                                  onChange={(e) => updatePopup({ badge: e.target.value })}
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  행사 제목
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.title}
+                                  onChange={(e) => updatePopup({ title: e.target.value })}
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                메인 혜택 상품명 1
+                              </label>
+                              <input
+                                type="text"
+                                value={popup.headline}
+                                onChange={(e) => updatePopup({ headline: e.target.value })}
+                                className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  기존 금액 1 (취소선)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.originalPrice}
+                                  onChange={(e) => updatePopup({ originalPrice: e.target.value })}
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  특가 금액 1
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.salePrice}
+                                  onChange={(e) => updatePopup({ salePrice: e.target.value })}
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  행사 기간 안내 1
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.periodText}
+                                  onChange={(e) => updatePopup({ periodText: e.target.value })}
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-white/10 space-y-4">
+                              <div>
+                                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                  추가 혜택 상품명 2 (미디 스트링 등 · 비우면 숨김)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={popup.secondaryHeadline || ''}
+                                  onChange={(e) =>
+                                    updatePopup({ secondaryHeadline: e.target.value })
+                                  }
+                                  className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                  <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                    기존 금액 2 (취소선)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={popup.secondaryOriginalPrice || ''}
+                                    onChange={(e) =>
+                                      updatePopup({ secondaryOriginalPrice: e.target.value })
+                                    }
+                                    className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                    특가 금액 2
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={popup.secondarySalePrice || ''}
+                                    onChange={(e) =>
+                                      updatePopup({ secondarySalePrice: e.target.value })
+                                    }
+                                    className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white font-mono"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                    행사 기간 안내 2
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={popup.secondaryPeriodText || ''}
+                                    onChange={(e) =>
+                                      updatePopup({ secondaryPeriodText: e.target.value })
+                                    }
+                                    className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                보조 설명 문구
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={popup.description}
+                                onChange={(e) => updatePopup({ description: e.target.value })}
+                                className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                                버튼 문구 (클릭 시 작업 문의 폼으로 이동)
+                              </label>
+                              <input
+                                type="text"
+                                value={popup.ctaText}
+                                onChange={(e) => updatePopup({ ctaText: e.target.value })}
+                                className="w-full px-3.5 py-2 text-xs bg-neutral-950 border border-white/10 rounded-md text-white"
+                              />
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
 
